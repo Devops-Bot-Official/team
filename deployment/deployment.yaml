@@ -1,0 +1,32 @@
+mode: remote
+identifier: k8s-master
+category: dks-master
+username: root
+jobs:
+  - stages:
+      - name: File Transfer
+        tasks:
+          file_transfer:
+            enabled: true
+            source_file: "/root/test/task/concluded"
+            dest_path: "/root/"
+
+      - name: Deploy clinic to DKS
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - "echo 'Starting Kubernetes deployment using kubeconfig...'"
+              - "echo 'Creating namespace if it does not exist...'"
+              - "kubectl create namespace devops-bot --dry-run=client -o yaml | kubectl apply -f -"
+              - "kubectl apply -f /root/concluded/petclinic-deployment.yaml -n devops-bot"
+              - "echo 'Sleeping for 30 seconds to allow deployment stabilization...'"
+              - "sleep 30"
+              - "kubectl apply -f /root/concluded/petclinic-service.yaml -n devops-bot"
+              - "echo 'Deployment completed. Verifying deployment status...'"
+              - |
+                kubectl rollout status deployment/petclinic-deployment -n devops-bot || {
+                  echo 'Deployment failed to stabilize. Exiting...';
+                  exit 1;
+                }
+              - "echo 'Deployment successfully rolled out.'"
