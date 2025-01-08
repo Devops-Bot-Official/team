@@ -87,8 +87,8 @@ jobs:
         tasks:
           docker_hub:
             enabled: true
-            username: "deeeye2"
-            password: "Sierraleone1@"
+            username: ""
+            password: ""
             repository: "clinic"
             image_tag: "latest"
             built_image_name: "clinic:latest"
