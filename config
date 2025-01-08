@@ -1,3 +1,28 @@
+                 1
+####################################################
+###  ec2 instance for dob installation   ############
+
+
+###################################################
+            
+#######################################################
+## dks (one master one worker)
+master:
+  instance_type: t2.large
+  key_name: jenkins_key
+  security_group: sg-04ac7dc75e1f54b3a
+  name: k8s-master
+
+workers:
+  instance_type: t2.medium
+  key_name: jenkins_key
+  security_group: sg-04ac7dc75e1f54b3a
+  name: k8s-worker
+  count: 1
+
+
+
+######################################
 mode: remote
 identifier: server
 category: devops
