@@ -1,0 +1,14 @@
+resources:
+
+  # EC2 instance creation
+  ec2_instances:
+    - instance_type: t2.medium
+      ami_id: enter
+      key_name: enter
+      region: us-east-1
+      security_group: enter
+      count: 1
+      tags:
+        - Key: Name
+          Value: server
+      subnet_id: enter
