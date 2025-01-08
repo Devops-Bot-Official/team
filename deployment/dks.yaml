@@ -1,0 +1,12 @@
+master:
+  instance_type: t2.large
+  key_name: <enter>
+  security_group: <enter>
+  name: k8s-master
+
+workers:
+  instance_type: t2.medium
+  key_name: <enter>
+  security_group: <enter>
+  name: k8s-worker
+  count: 2
