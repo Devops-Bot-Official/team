@@ -1,16 +1,17 @@
 mode: remote
-identifier: <enter agent>
-category: <enter catogry>
+identifier: server
+category: devops
 username: root
+
 jobs:
   - stages:
-      - name: Docker
+      - name: Maven Setup
         tasks:
           setup_and_clone:
-            branches: [master]
             enabled: true
-            clone_dir: "/tmp/artifacts"
-            source_url: "https://github.com/deeeye2/simple-website.git"
+            branches: [main]
+            clone_dir: "/tmp/clone_repo_trial2"
+            source_url: "https://github.com/deeeye2/code4sonar-test.git"
 
       - name: trivy-file
         ignore_failure: true
@@ -18,17 +19,48 @@ jobs:
           trivy:
             enabled: true
             target_type: "filesystem"           # "image" or "filesystem"
-            target: "/tmp/artifacts"
+            target: "/tmp/clone_repo_trial2"
             output_dir: "/tmp/trivy_results-file"
             format: "json"
+
+      - name: Maven Build
+        tasks:
+          maven:
+            enabled: true
+            project_pom: "/tmp/clone_repo_trial2/pom.xml"
+            goals: "clean install"
+            output_dir: "/tmp/clone_repo_trial2"
+
+      - name: install unzip
+        tasks:
+          sh:
+            enabled: true
+            steps:
+              - "echo 'Installation started...'"
+              - "apt install unzip"
+
+      - name: SonarQube Analysis
+
+        tasks:
+          sonarqube_analysis:
+            enabled: true
+            server_url: "http://35.173.204.187:9000"
+            project_key: "devops-bot"
+            token: "sqp_06fd4b042c79bb4edd12b3926cb616124d276850"
+            source_dir: "/tmp/clone_repo_trial2"
+            java_binaries: "/tmp/clone_repo_trial2/target/classes"
+            jacoco_report_path: "/tmp/clone_repo_trial2/target/site/jacoco/jacoco.xml"
+            language: "java"
+            inclusions: "**/*.java"
+            exclusions: "**/*.xml"
+
 
       - name: Docker Build
         tasks:
           docker_build:
             enabled: true
-            output_dir: "/tmp/docker_artifacts"
-            dockerfile_path: "/tmp/artifacts/Dockerfile"
-            image_name: "my-docker-image"
+            dockerfile_path: "/tmp/clone_repo_trial2/Dockerfile"
+            image_name: "clinic"
             image_tag: "latest"
             build_tag: "latest"
 
@@ -40,7 +72,7 @@ jobs:
               - "echo 'Starting Trivy scan...'"
               - "mkdir -p /tmp/trivy_results"
               - |
-                trivy image my-docker-image:latest \
+                trivy image clinic:latest \
                   --format json \
                   --output /tmp/trivy_results/scan_report.json \
                   --severity LOW,MEDIUM,HIGH,CRITICAL
@@ -50,6 +82,17 @@ jobs:
                 else \
                   echo 'Trivy scan failed or report is missing.'; \
                 fi
+
+      - name: Docker Hub
+        tasks:
+          docker_hub:
+            enabled: true
+            username: "deeeye2"
+            password: "Sierraleone1@"
+            repository: "clinic"
+            image_tag: "latest"
+            built_image_name: "clinic:latest"
+
 
 
 ######################################################################################################
